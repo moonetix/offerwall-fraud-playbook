@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use or adapt this playbook, please cite it as below."
+type: software
+title: "Offerwall fraud playbook"
+abstract: "A vendor-neutral guide for publishers running rewards and offerwall programs: threat model, account farms, network and device signals, postback security, reversals and holds, cash-out fraud, logging, review queues, a launch checklist and incident response, with tested code."
+authors:
+  - name: "Moonetix"
+    website: "https://moonetix.com"
+version: 1.0.0
+date-released: 2026-11-11
+license: CC-BY-4.0
+repository-code: "https://github.com/moonetix/offerwall-fraud-playbook"
+url: "https://moonetix.com/academy/traffic-quality/traffic-quality-rules"
+keywords:
+  - fraud prevention
+  - offerwall
+  - rewards
+  - postback
+  - chargebacks
+  - trust and safety

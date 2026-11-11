@@ -1,0 +1,12 @@
+{
+  "name": "offerwall-fraud-playbook",
+  "version": "1.0.0",
+  "description": "Vendor-neutral fraud playbook for offerwall and rewards publishers, with tested code.",
+  "license": "CC-BY-4.0 AND MIT",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test && php test/php/postback_test.php"
+  }
+}

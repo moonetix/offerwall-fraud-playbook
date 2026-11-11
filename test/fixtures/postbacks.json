@@ -1,0 +1,18 @@
+{
+  "key": "test_postback_key_not_secret",
+  "note": "Signed by the Moonetix postback code with the test key above. Test data only.",
+  "cases": [
+    { "name": "credit", "query": "user=u_alice&tx=tx_2001&status=1&reward=500&payout=0.5&offer_id=77&hash=0165b3aa8ceeb3cbf4158056a136f0d07e8d963785fc1bc1e2a323185befa11b", "valid": true },
+    { "name": "reversal of the credit", "query": "user=u_alice&tx=tx_2001&status=2&reward=500&payout=0.5&offer_id=77&hash=b647d9ec7f31332feec7bcc2a1ba4230bdf4023e09e20ee569f70b0409852017", "valid": true },
+    { "name": "second credit", "query": "user=u_alice&tx=tx_2002&status=1&reward=120&payout=0.5&offer_id=77&hash=0adc605177539db2cd6f8c5b1c5abde2f8edba11346413f49366f7e1196f8815", "valid": true },
+    { "name": "credit for bob", "query": "user=u_bob&tx=tx_2003&status=1&reward=300&payout=0.5&offer_id=77&hash=3992b8edaf94a71650e4da6ae2de0a72c1fa29693ce34f3063a5f27ea92c680f", "valid": true },
+    { "name": "decimal reward", "query": "user=u_bob&tx=tx_2004&status=1&reward=75.5&payout=0.5&offer_id=77&hash=92f1a3abe1188ad8a9176112a86fa810d0ebb0e87b605cc33a9e178dae949b19", "valid": true },
+    { "name": "reversal without a credit", "query": "user=u_carol&tx=tx_2005&status=2&reward=900&payout=0.5&offer_id=77&hash=228f92d99f51e37b3d09cbd2ff015c40c38e716b79f5edf84b6d81363a34153e", "valid": true },
+    { "name": "signed with a different key", "query": "user=u_alice&tx=tx_2002&status=1&reward=120&payout=0.5&offer_id=77&hash=02f7f91341c5e06252fd4b4cc2a118c0e19a40143afd6e6afebdfe33b41496ca", "valid": false },
+    { "name": "reward changed after signing", "query": "user=u_alice&tx=tx_2002&status=1&reward=12000&payout=0.5&offer_id=77&hash=0adc605177539db2cd6f8c5b1c5abde2f8edba11346413f49366f7e1196f8815", "valid": false },
+    { "name": "user changed after signing", "query": "user=u_mallory&tx=tx_2003&status=1&reward=300&payout=0.5&offer_id=77&hash=3992b8edaf94a71650e4da6ae2de0a72c1fa29693ce34f3063a5f27ea92c680f", "valid": false },
+    { "name": "status flipped after signing", "query": "user=u_alice&tx=tx_2001&status=1&reward=500&payout=0.5&offer_id=77&hash=b647d9ec7f31332feec7bcc2a1ba4230bdf4023e09e20ee569f70b0409852017", "valid": false },
+    { "name": "unsigned payout changed (not covered by the hash)", "query": "user=u_bob&tx=tx_2003&status=1&reward=300&payout=99&offer_id=77&hash=3992b8edaf94a71650e4da6ae2de0a72c1fa29693ce34f3063a5f27ea92c680f", "valid": true },
+    { "name": "missing hash", "query": "user=u_bob&tx=tx_2003&status=1&reward=300&payout=0.5&offer_id=77", "valid": false }
+  ]
+}
