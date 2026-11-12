@@ -12,6 +12,21 @@ Maintained by [Moonetix](https://moonetix.com).
 
 GPT sites, rewards apps, games with an earn screen, and Discord or Telegram communities with a points economy all share one weakness: they turn user activity into money, and some of that activity is not what it claims to be. This playbook is vendor-neutral. It covers what to look for, how to find it in your own data, and how to act without punishing honest users. The code runs, and the tests prove it.
 
+A first query to run on your own data. Money has to land somewhere, so a payout destination shared by several accounts is often the strongest link between them ([chapter 7](chapters/07-cashout-fraud.md)):
+
+```sql
+SELECT method,
+       destination_hash,
+       COUNT(DISTINCT user_id)        AS accounts,
+       GROUP_CONCAT(DISTINCT user_id) AS user_ids
+FROM payout_destinations
+GROUP BY method, destination_hash
+HAVING COUNT(DISTINCT user_id) > 1
+ORDER BY accounts DESC;
+```
+
+The table is defined in [schema.sql](snippets/sql/schema.sql); on PostgreSQL use `STRING_AGG(DISTINCT user_id::text, ',')`. Six more detection queries are in [snippets/sql/queries/](snippets/sql/queries/).
+
 ## Chapters
 
 | # | Chapter | What it covers |
@@ -39,6 +54,22 @@ Chapters 2 to 8 follow the same order: **signals**, **detection logic** with cod
 4. **Put the strongest checks at cash-out.** It is the last point where a mistake costs nothing. ([7](chapters/07-cashout-fraud.md))
 5. **Act on combinations, softly first.** Limit, hold, review, and only then deny, with a human appeal. ([10](chapters/10-review-queues.md))
 
+## The life of one reward
+
+Rules 1 and 2 as states of a single ledger row, exactly as [ledger.mjs](snippets/node/ledger.mjs) implements them (the postback side is ported to PHP in [postback.php](snippets/php/postback.php)). Balances are summed from rows, never stored, so a reversal after cash-out shows up as a negative spendable balance instead of disappearing.
+
+```mermaid
+stateDiagram-v2
+    [*] --> held: status 1, verified, new transaction_id
+    [*] --> reversed: status 2, unknown transaction (tombstone)
+    held --> available: hold ends, referral commission created
+    held --> reversed: status 2 in the hold, nothing paid
+    available --> reversed: status 2 later, commission cancelled
+    reversed --> reversed: late or replayed postback, ignored
+```
+
+Referral commissions are created from released earnings only, so a referral ring earns nothing from rewards reversed during the hold ([2](chapters/02-account-farms-and-referral-rings.md), [6](chapters/06-reversals-holds-and-clawbacks.md)).
+
 ## The code
 
 Every snippet in the chapters comes from [snippets/](snippets/) and is covered by tests. No dependencies: Node.js 22 (`node:sqlite`, `node:crypto`) and PHP 8.1+ with PDO SQLite.
@@ -57,7 +88,7 @@ Every snippet in the chapters comes from [snippets/](snippets/) and is covered b
 ```sh
 git clone https://github.com/moonetix/offerwall-fraud-playbook.git
 cd offerwall-fraud-playbook
-node --test                        # 11 tests: signatures, ledger, IP ranges, linking, tiers, every SQL query, house style
+node --test                        # signatures, ledger, IP ranges, linking, tiers, every SQL query, house style
 php test/php/postback_test.php     # 25 checks against the same signed postbacks
 ```
 
@@ -80,4 +111,4 @@ To cite the playbook, use [CITATION.cff](CITATION.cff) or the "Cite this reposit
 
 ## About Moonetix
 
-Moonetix is a pay-per-result affiliate network. Publishers add its offerwall to apps, games, websites and communities, and their users earn the publisher's own currency by completing offers. Every credit and every reversal reaches the publisher as a signed postback with one transaction ID, which is what chapters 5 and 6 build on. Docs: [docs.moonetix.com](https://docs.moonetix.com). Publisher sign-up: [moonetix.com/register](https://moonetix.com/register). Related: [affiliate-postback-macros](https://github.com/moonetix/affiliate-postback-macros) and [offerwall-postback-handlers](https://github.com/moonetix/offerwall-postback-handlers).
+Moonetix is an affiliate network. Publishers add its offerwall to apps, games, websites and communities, and their users earn the publisher's own currency by completing offers. Every credit and every reversal reaches the publisher as a signed postback with one transaction ID, which is what chapters 5 and 6 build on. Docs: [docs.moonetix.com](https://docs.moonetix.com). Publisher sign-up: [moonetix.com/register](https://moonetix.com/register?from=github-offerwall-fraud-playbook). Related open source: [datacenter-ip-ranges](https://github.com/moonetix/datacenter-ip-ranges) for daily cloud, Tor and Private Relay ranges (chapter 3), [signup-guard](https://github.com/moonetix/signup-guard) for sign-up checks and [referral-engine](https://github.com/moonetix/referral-engine) for commissions with clawbacks (chapter 2), [postback-tester](https://github.com/moonetix/postback-tester) to test a postback handler against chapter 5, and [affiliate-postback-macros](https://github.com/moonetix/affiliate-postback-macros) and [offerwall-postback-handlers](https://github.com/moonetix/offerwall-postback-handlers).
